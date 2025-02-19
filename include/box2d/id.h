@@ -46,8 +46,6 @@ typedef struct b2BodyId
 	int32_t index1;
 	uint16_t world0;
 	uint16_t generation;
-	uint32_t actorID;
-	uint32_t actorGen;
 } b2BodyId;
 
 /// Shape id references a shape instance. This should be treated as an opaque handle.
@@ -56,8 +54,6 @@ typedef struct b2ShapeId
 	int32_t index1;
 	uint16_t world0;
 	uint16_t generation;
-	uint32_t actorID;
-	uint32_t actorGen;
 } b2ShapeId;
 
 /// Chain id references a chain instances. This should be treated as an opaque handle.
@@ -66,8 +62,6 @@ typedef struct b2ChainId
 	int32_t index1;
 	uint16_t world0;
 	uint16_t generation;
-	uint32_t actorID;
-	uint32_t actorGen;
 } b2ChainId;
 
 /// Joint id references a joint instance. This should be treated as an opaque handle.
@@ -76,8 +70,6 @@ typedef struct b2JointId
 	int32_t index1;
 	uint16_t world0;
 	uint16_t generation;
-	uint32_t actorID;
-	uint32_t actorGen;
 } b2JointId;
 
 /// Use these to make your identifiers null.
