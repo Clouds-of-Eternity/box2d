@@ -753,6 +753,18 @@ b2Vec2 b2Body_GetLinearVelocity( b2BodyId bodyId )
 	return b2Vec2_zero;
 }
 
+b2Vec2* b2Body_GetLinearVelocityPtr( b2BodyId bodyId )
+{
+	b2World* world = b2GetWorld( bodyId.world0 );
+	b2Body* body = b2GetBodyFullId( world, bodyId );
+	b2BodyState* state = b2GetBodyState( world, body );
+	if ( state != NULL )
+	{
+		return &state->linearVelocity;
+	}
+	return NULL;
+}
+
 float b2Body_GetAngularVelocity( b2BodyId bodyId )
 {
 	b2World* world = b2GetWorld( bodyId.world0 );
@@ -763,6 +775,18 @@ float b2Body_GetAngularVelocity( b2BodyId bodyId )
 		return state->angularVelocity;
 	}
 	return 0.0;
+}
+
+float *b2Body_GetAngularVelocityPtr( b2BodyId bodyId )
+{
+	b2World* world = b2GetWorld( bodyId.world0 );
+	b2Body* body = b2GetBodyFullId( world, bodyId );
+	b2BodyState* state = b2GetBodyState( world, body );
+	if ( state != NULL )
+	{
+		return &state->angularVelocity;
+	}
+	return NULL;
 }
 
 void b2Body_SetLinearVelocity( b2BodyId bodyId, b2Vec2 linearVelocity )

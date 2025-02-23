@@ -285,8 +285,14 @@ B2_API b2Vec2 b2Body_GetWorldVector( b2BodyId bodyId, b2Vec2 localVector );
 /// Get the linear velocity of a body's center of mass. Usually in meters per second.
 B2_API b2Vec2 b2Body_GetLinearVelocity( b2BodyId bodyId );
 
+/// Returns NULL if the body is invalid.
+B2_API b2Vec2* b2Body_GetLinearVelocityPtr( b2BodyId bodyId );
+
 /// Get the angular velocity of a body in radians per second
 B2_API float b2Body_GetAngularVelocity( b2BodyId bodyId );
+
+/// Returns NULL if the body is invalid.
+B2_API float* b2Body_GetAngularVelocityPtr( b2BodyId bodyId );
 
 /// Set the linear velocity of a body. Usually in meters per second.
 B2_API void b2Body_SetLinearVelocity( b2BodyId bodyId, b2Vec2 linearVelocity );
