@@ -612,8 +612,12 @@ B2_API b2CastOutput b2Shape_RayCast( b2ShapeId shapeId, const b2RayCastInput* in
 /// Get a copy of the shape's circle. Asserts the type is correct.
 B2_API b2Circle b2Shape_GetCircle( b2ShapeId shapeId );
 
+B2_API b2Circle* b2Shape_GetCirclePtr( b2ShapeId shapeId );
+
 /// Get a copy of the shape's line segment. Asserts the type is correct.
 B2_API b2Segment b2Shape_GetSegment( b2ShapeId shapeId );
+
+B2_API b2Segment* b2Shape_GetSegmentPtr( b2ShapeId shapeId );
 
 /// Get a copy of the shape's chain segment. These come from chain shapes.
 /// Asserts the type is correct.
@@ -622,8 +626,12 @@ B2_API b2ChainSegment b2Shape_GetChainSegment( b2ShapeId shapeId );
 /// Get a copy of the shape's capsule. Asserts the type is correct.
 B2_API b2Capsule b2Shape_GetCapsule( b2ShapeId shapeId );
 
+B2_API b2Capsule* b2Shape_GetCapsulePtr( b2ShapeId shapeId );
+
 /// Get a copy of the shape's convex polygon. Asserts the type is correct.
 B2_API b2Polygon b2Shape_GetPolygon( b2ShapeId shapeId );
+
+B2_API b2Polygon* b2Shape_GetPolygonPtr( b2ShapeId shapeId );
 
 /// Allows you to change a shape to be a circle or update the current circle.
 /// This does not modify the mass properties.

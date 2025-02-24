@@ -1293,12 +1293,28 @@ b2Circle b2Shape_GetCircle( b2ShapeId shapeId )
 	return shape->circle;
 }
 
+b2Circle* b2Shape_GetCirclePtr( b2ShapeId shapeId )
+{
+	b2World* world = b2GetWorld( shapeId.world0 );
+	b2Shape* shape = b2GetShape( world, shapeId );
+	B2_ASSERT( shape->type == b2_circleShape );
+	return &shape->circle;
+}
+
 b2Segment b2Shape_GetSegment( b2ShapeId shapeId )
 {
 	b2World* world = b2GetWorld( shapeId.world0 );
 	b2Shape* shape = b2GetShape( world, shapeId );
 	B2_ASSERT( shape->type == b2_segmentShape );
 	return shape->segment;
+}
+
+b2Segment* b2Shape_GetSegmentPtr( b2ShapeId shapeId )
+{
+	b2World* world = b2GetWorld( shapeId.world0 );
+	b2Shape* shape = b2GetShape( world, shapeId );
+	B2_ASSERT( shape->type == b2_segmentShape );
+	return &shape->segment;
 }
 
 b2ChainSegment b2Shape_GetChainSegment( b2ShapeId shapeId )
@@ -1317,12 +1333,28 @@ b2Capsule b2Shape_GetCapsule( b2ShapeId shapeId )
 	return shape->capsule;
 }
 
+b2Capsule* b2Shape_GetCapsulePtr( b2ShapeId shapeId )
+{
+	b2World* world = b2GetWorld( shapeId.world0 );
+	b2Shape* shape = b2GetShape( world, shapeId );
+	B2_ASSERT( shape->type == b2_capsuleShape );
+	return &shape->capsule;
+}
+
 b2Polygon b2Shape_GetPolygon( b2ShapeId shapeId )
 {
 	b2World* world = b2GetWorld( shapeId.world0 );
 	b2Shape* shape = b2GetShape( world, shapeId );
 	B2_ASSERT( shape->type == b2_polygonShape );
 	return shape->polygon;
+}
+
+b2Polygon* b2Shape_GetPolygonPtr( b2ShapeId shapeId )
+{
+	b2World* world = b2GetWorld( shapeId.world0 );
+	b2Shape* shape = b2GetShape( world, shapeId );
+	B2_ASSERT( shape->type == b2_polygonShape );
+	return &shape->polygon;
 }
 
 void b2Shape_SetCircle( b2ShapeId shapeId, const b2Circle* circle )
