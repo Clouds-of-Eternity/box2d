@@ -10,6 +10,8 @@ project "box2d"
         "include"
     }
     defines "BOX2D_ENABLE_SIMD"
+    filter "system:linux"
+        defines { "_POSIX_C_SOURCE=199309L" }
 
     files { 
         "src/aabb.c",
