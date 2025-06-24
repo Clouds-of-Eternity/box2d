@@ -55,7 +55,12 @@ static b2Vec2 b2ComputePolygonCentroid( const b2Vec2* vertices, int count )
 
 b2Polygon b2MakePolygon( const b2Hull* hull, float radius )
 {
-	B2_ASSERT( b2ValidateHull( hull ) );
+	//B2_ASSERT(  );
+	if (!b2ValidateHull( hull ))
+	{
+		b2Polygon empty = { 0 };
+		return empty;
+	}
 
 	if ( hull->count < 3 )
 	{
