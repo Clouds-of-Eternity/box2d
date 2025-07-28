@@ -760,6 +760,4 @@ B2_API void b2DynamicTree_Validate( const b2DynamicTree* tree );
 /// Validate this tree has no enlarged AABBs. For testing.
 B2_API void b2DynamicTree_ValidateNoEnlarged( const b2DynamicTree* tree );
 
-
-
 /**@}*/

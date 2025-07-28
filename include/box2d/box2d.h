@@ -120,6 +120,10 @@ B2_API void b2World_EnableContinuous( b2WorldId worldId, bool flag );
 /// Is continuous collision enabled?
 B2_API bool b2World_IsContinuousEnabled( b2WorldId worldId );
 
+B2_API b2DynamicTree* b2World_GetDynamicTree( b2WorldId worldId, b2BodyType bodyType);
+
+B2_API b2ShapeId b2World_GetShapeId( b2WorldId worldId, int rawIndex);
+
 /// Adjust the restitution threshold. It is recommended not to make this value very small
 /// because it will prevent bodies from sleeping. Usually in meters per second.
 /// @see b2WorldDef

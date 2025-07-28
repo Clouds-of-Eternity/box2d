@@ -936,6 +936,14 @@ b2BodyId b2Shape_GetBody( b2ShapeId shapeId )
 	return b2MakeBodyId( world, shape->bodyId );
 }
 
+b2ShapeId b2World_GetShapeId( b2WorldId worldId, int rawIndex)
+{
+	b2World* world = b2GetWorldFromId( worldId );
+	b2Shape* shape = b2ShapeArray_Get( &world->shapes, rawIndex );
+	b2ShapeId id = { rawIndex + 1, world->worldId, shape->generation };
+	return id;
+}
+
 b2WorldId b2Shape_GetWorld( b2ShapeId shapeId )
 {
 	b2World* world = b2GetWorld( shapeId.world0 );

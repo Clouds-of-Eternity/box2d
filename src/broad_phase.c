@@ -474,6 +474,12 @@ void b2UpdateBroadPhasePairs( b2World* world )
 	b2TracyCZoneEnd( update_pairs );
 }
 
+b2DynamicTree* b2World_GetDynamicTree( b2WorldId worldId, b2BodyType bodyType)
+{
+	b2World* world = b2GetWorldFromId( worldId );
+	return &world->broadPhase.trees[ (int)bodyType ];
+}
+
 bool b2BroadPhase_TestOverlap( const b2BroadPhase* bp, int proxyKeyA, int proxyKeyB )
 {
 	int typeIndexA = B2_PROXY_TYPE( proxyKeyA );
