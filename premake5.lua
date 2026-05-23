@@ -70,6 +70,7 @@ project "box2d"
         "src/world.h"
     }
     
+    optimize "On"
     filter "system:linux"
         defines { "_POSIX_C_SOURCE=199309L" }
         
@@ -79,4 +80,3 @@ project "box2d"
 
     filter "configurations:Release"
         defines { "NDEBUG" }
-        optimize "On"
