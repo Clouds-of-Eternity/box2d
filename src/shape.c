@@ -1054,7 +1054,7 @@ b2BodyId b2Shape_GetBody( b2ShapeId shapeId )
 b2ShapeId b2World_GetShapeId( b2WorldId worldId, int rawIndex)
 {
 	b2World* world = b2GetWorldFromId( worldId );
-	b2Shape* shape = b2ShapeArray_Get( &world->shapes, rawIndex );
+	b2Shape* shape = b2Array_Get( world->shapes, rawIndex );
 	b2ShapeId id = { rawIndex + 1, world->worldId, shape->generation };
 	return id;
 }
