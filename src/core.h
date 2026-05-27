@@ -3,11 +3,9 @@
 
 #pragma once
 
-#include "box2d/math_functions.h"
+#include "box2d/base.h"
 
 // clang-format off
-
-#define B2_NULL_INDEX ( -1 )
 
 // for performance comparisons
 #define B2_RESTRICT restrict
@@ -16,12 +14,6 @@
 	#define B2_DEBUG 0
 #else
 	#define B2_DEBUG 1
-#endif
-
-#if defined( BOX2D_VALIDATE ) && !defined( NDEBUG )
-	#define B2_VALIDATE 1
-#else
-	#define B2_VALIDATE 0
 #endif
 
 // Define platform
@@ -56,7 +48,11 @@
 #endif
 
 // Define SIMD
-#if defined( BOX2D_ENABLE_SIMD )
+#if defined( BOX2D_DISABLE_SIMD )
+	#define B2_SIMD_NONE
+	// note: I tried width of 1 and got no performance change
+	#define B2_SIMD_WIDTH 4
+#else
 	#if defined( B2_CPU_X86_X64 )
 		#if defined( BOX2D_AVX2 )
 			#define B2_SIMD_AVX2
@@ -76,10 +72,6 @@
 		#define B2_SIMD_NONE
 		#define B2_SIMD_WIDTH 4
 	#endif
-#else
-	#define B2_SIMD_NONE
-	// note: I tried width of 1 and got no performance change
-	#define B2_SIMD_WIDTH 4
 #endif
 
 // Define compiler
@@ -98,16 +90,20 @@
 	#define b2TracyCZoneC( ctx, color, active ) TracyCZoneC( ctx, color, active )
 	#define b2TracyCZoneNC( ctx, name, color, active ) TracyCZoneNC( ctx, name, color, active )
 	#define b2TracyCZoneEnd( ctx ) TracyCZoneEnd( ctx )
+	#define b2TracyCFrame TracyCFrameMark
+	#define b2TracyCSetThreadName( name ) TracyCSetThreadName( name )
 #else
 	#define b2TracyCZoneC( ctx, color, active )
 	#define b2TracyCZoneNC( ctx, name, color, active )
 	#define b2TracyCZoneEnd( ctx )
+	#define b2TracyCFrame
+	#define b2TracyCSetThreadName( name )
 #endif
 
 // clang-format on
 
 // Returns the number of elements of an array
-#define B2_ARRAY_COUNT( A ) (int)( sizeof( A ) / sizeof( A[0] ) )
+#define B2_ARRAY_COUNT( A ) ((int)( sizeof( A ) / sizeof( *A ) ))
 
 // Used to prevent the compiler from warning about unused variables
 #define B2_UNUSED( ... ) (void)sizeof( ( __VA_ARGS__, 0 ) )
@@ -116,21 +112,32 @@
 #define B2_SECRET_COOKIE 1152023
 
 // Snoop counters. These should be disabled in optimized builds because they are expensive.
+#if defined( box2d_EXPORTS )
 #define B2_SNOOP_TABLE_COUNTERS B2_DEBUG
 #define B2_SNOOP_PAIR_COUNTERS B2_DEBUG
 #define B2_SNOOP_TOI_COUNTERS B2_DEBUG
+#else
+#define B2_SNOOP_TABLE_COUNTERS 0
+#define B2_SNOOP_PAIR_COUNTERS 0
+#define B2_SNOOP_TOI_COUNTERS 0
+#endif
+
+#ifdef __cplusplus
+#define B2_TYPE_OF( A ) decltype( A )
+#else
+#define B2_TYPE_OF( A ) __typeof__( A )
+#endif
+
+#define B2_SWAP( x, y )                                                                                                          \
+	do                                                                                                                           \
+	{                                                                                                                            \
+		B2_TYPE_OF( x ) B2_SWAP_TEMP = x;                                                                                        \
+		x = y;                                                                                                                   \
+		y = B2_SWAP_TEMP;                                                                                                        \
+	}                                                                                                                            \
+	while ( 0 )
 
 #define B2_CHECK_DEF( DEF ) B2_ASSERT( DEF->internalValue == B2_SECRET_COOKIE )
-
-void* b2Alloc( int size );
-#define B2_ALLOC_STRUCT( type ) b2Alloc(sizeof(type))
-#define B2_ALLOC_ARRAY( count, type ) b2Alloc(count * sizeof(type))
-
-void b2Free( void* mem, int size );
-#define B2_FREE_STRUCT( mem, type ) b2Free( mem, sizeof(type));
-#define B2_FREE_ARRAY( mem, count, type ) b2Free(mem, count * sizeof(type))
-
-void* b2GrowAlloc( void* oldMem, int oldSize, int newSize );
 
 typedef struct b2AtomicInt
 {
@@ -142,12 +149,34 @@ typedef struct b2AtomicU32
 	uint32_t value;
 } b2AtomicU32;
 
-#if 0
-void b2AtomicStoreInt( b2AtomicInt* a, int value );
-int b2AtomicLoadInt( b2AtomicInt* a );
-int b2AtomicFetchAddInt( b2AtomicInt* a, int increment );
-bool b2AtomicCompareExchangeInt( b2AtomicInt* obj, int expected, int desired );
+void* b2Alloc( int size );
+void* b2AllocZeroInit( int size );
+#define B2_ALLOC_STRUCT( type ) b2Alloc(sizeof(type))
+#define B2_ALLOC_ARRAY( count, type ) b2Alloc(count * sizeof(type))
 
-void b2AtomicStoreU32( b2AtomicU32* a, uint32_t value );
-uint32_t b2AtomicLoadU32( b2AtomicU32* a );
-#endif
+void b2Free( void* mem, int size );
+#define B2_FREE_STRUCT( mem, type ) b2Free( mem, sizeof(type));
+#define B2_FREE_ARRAY( mem, count, type ) b2Free(mem, count * sizeof(type))
+
+void* b2GrowAlloc( void* oldMem, int oldSize, int newSize );
+void* b2GrowAllocZeroInit( void* oldMem, int oldSize, int newSize );
+
+void b2Log( const char* format, ... );
+
+typedef struct b2Mutex b2Mutex;
+b2Mutex* b2CreateMutex( void );
+void b2DestroyMutex( b2Mutex* m );
+void b2LockMutex( b2Mutex* m );
+void b2UnlockMutex( b2Mutex* m );
+
+typedef struct b2Semaphore b2Semaphore;
+b2Semaphore* b2CreateSemaphore( int initCount );
+void b2DestroySemaphore( b2Semaphore* s );
+void b2WaitSemaphore( b2Semaphore* s );
+void b2SignalSemaphore( b2Semaphore* s );
+
+typedef void b2ThreadFunction( void* context );
+typedef struct b2Thread b2Thread;
+// Name may be NULL, otherwise it is copied.
+b2Thread* b2CreateThread( b2ThreadFunction* function, void* context, const char* name );
+void b2JoinThread( b2Thread* t );

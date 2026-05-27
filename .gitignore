@@ -1,4 +1,5 @@
 build/
+api/
 imgui.ini
 settings.ini
 .vscode/
@@ -11,3 +12,7 @@ CMakeUserPresets.json
 obj/
 bin/
 Makefile
+.claude/
+.tmp/
+AGENTS.md
+GEMINI.md
