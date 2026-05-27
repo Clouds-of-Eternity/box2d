@@ -3,11 +3,11 @@
 
 #pragma once
 
-#include "container.h"
+#include "array.h"
 
 typedef struct b2IdPool
 {
-	b2Array( int ) freeArray;
+	b2IntArray freeArray;
 	int nextIndex;
 } b2IdPool;
 
@@ -31,5 +31,5 @@ static inline int b2GetIdCapacity( b2IdPool* pool )
 
 static inline int b2GetIdBytes( b2IdPool* pool )
 {
-	return b2Array_ByteCount( pool->freeArray );
+	return b2IntArray_ByteCount(&pool->freeArray);
 }

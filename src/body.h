@@ -3,71 +3,18 @@
 
 #pragma once
 
-#include "container.h"
+#include "array.h"
 
-#include "box2d/constants.h"
 #include "box2d/math_functions.h"
 #include "box2d/types.h"
 
 typedef struct b2World b2World;
 
-enum b2BodyFlags
-{
-	// This body has fixed translation along the x-axis
-	b2_lockLinearX = 0x00000001,
-
-	// This body has fixed translation along the y-axis
-	b2_lockLinearY = 0x00000002,
-
-	// This body has fixed rotation
-	b2_lockAngularZ = 0x00000004,
-
-	// This flag is used for debug draw
-	b2_isFast = 0x00000008,
-
-	// This dynamic body does a final CCD pass against all body types, but not other bullets
-	b2_isBullet = 0x00000010,
-
-	// This body was speed capped in the current time step
-	b2_isSpeedCapped = 0x00000020,
-
-	// This body had a time of impact event in the current time step
-	b2_hadTimeOfImpact = 0x00000040,
-
-	// This body has no limit on angular velocity
-	b2_allowFastRotation = 0x00000080,
-
-	// This body need's to have its AABB increased
-	b2_enlargeBounds = 0x00000100,
-
-	// This body is dynamic so the solver should write to it.
-	// This prevents writing to kinematic bodies that causes a multithreaded sharing
-	// cache coherence problem even when the values are not changing.
-	// Used for b2BodyState flags.
-	b2_dynamicFlag = 0x00000200,
-
-	// Flag to indicate the user has used the updateBodyMass option to defer mass
-	// computation but b2Body_ApplyMassFromShapes was not called before the world step.
-	b2_dirtyMass = 0x00000400,
-
-	b2_enableSleep = 0x00000800,
-
-	b2_bodyEnableContactRecycling = 0x00001000,
-
-	// All lock flags
-	b2_allLocks = b2_lockAngularZ | b2_lockLinearX | b2_lockLinearY,
-
-	// If this flag is set then the body has fixed rotation
-	// todo use this to set the inverse inertia to zero
-	b2_fixedRotation = b2_lockAngularZ,
-
-	// These flags are transient per time step. These may be different across b2Body, b2BodySim, and b2BodyState.
-	b2_bodyTransientFlags = b2_isFast | b2_isSpeedCapped | b2_hadTimeOfImpact,
-};
-
 // Body organizational details that are not used in the solver.
 typedef struct b2Body
 {
+	char name[32];
+
 	void* userData;
 
 	// index of solver set stored in b2World
@@ -95,8 +42,9 @@ typedef struct b2Body
 	// All enabled dynamic and kinematic bodies are in an island.
 	int islandId;
 
-	// Need this island index for faster union-find
-	int islandIndex;
+	// doubly-linked island list
+	int islandPrev;
+	int islandNext;
 
 	float mass;
 
@@ -111,16 +59,16 @@ typedef struct b2Body
 
 	int id;
 
-	// b2BodyFlags
-	uint32_t flags;
-
 	b2BodyType type;
 
 	// This is monotonically advanced when a body is allocated in this slot
 	// Used to check for invalid b2BodyId
 	uint16_t generation;
 
-	char name[B2_NAME_LENGTH + 1];
+	bool enableSleep;
+	bool fixedRotation;
+	bool isSpeedCapped;
+	bool isMarked;
 } b2Body;
 
 // Body State
@@ -154,10 +102,7 @@ typedef struct b2BodyState
 {
 	b2Vec2 linearVelocity; // 8
 	float angularVelocity; // 4
-
-	// b2BodyFlags
-	// Important flags: locking, dynamic
-	uint32_t flags; // 4
+	int flags;			   // 4
 
 	// Using delta position reduces round-off error far from the origin
 	b2Vec2 deltaPosition; // 8
@@ -174,6 +119,7 @@ static const b2BodyState b2_identityBodyState = { { 0.0f, 0.0f }, 0.0f, 0, { 0.0
 // Transform data used for collision and solver preparation.
 typedef struct b2BodySim
 {
+	// todo better to have transform in sim or in base body? Try both!
 	// transform for body origin
 	b2Transform transform;
 
@@ -200,16 +146,17 @@ typedef struct b2BodySim
 	float angularDamping;
 	float gravityScale;
 
-	// Index of b2Body
+	// body data can be moved around, the id is stable (used in b2BodyId)
 	int bodyId;
 
-	// b2BodyFlags
-	uint32_t flags;
-} b2BodySim;
+	// This flag is used for debug draw
+	bool isFast;
 
-b2DeclareArray( b2Body );
-b2DeclareArray( b2BodySim );
-b2DeclareArray( b2BodyState );
+	bool isBullet;
+	bool isSpeedCapped;
+	bool allowFastRotation;
+	bool enlargeAABB;
+} b2BodySim;
 
 // Get a validated body from a world using an id.
 b2Body* b2GetBodyFullId( b2World* world, b2BodyId bodyId );
@@ -224,13 +171,11 @@ bool b2ShouldBodiesCollide( b2World* world, b2Body* bodyA, b2Body* bodyB );
 
 b2BodySim* b2GetBodySim( b2World* world, b2Body* body );
 b2BodyState* b2GetBodyState( b2World* world, b2Body* body );
-void b2RemoveBodySim( b2Array( b2BodySim ) * bodySims, b2Array( b2Body ) * bodies, int localIndex );
 
 // careful calling this because it can invalidate body, state, joint, and contact pointers
 bool b2WakeBody( b2World* world, b2Body* body );
 
 void b2UpdateBodyMassData( b2World* world, b2Body* body );
-void b2SyncBodyFlags( b2World* world, b2Body* body );
 
 static inline b2Sweep b2MakeSweep( const b2BodySim* bodySim )
 {
@@ -242,3 +187,8 @@ static inline b2Sweep b2MakeSweep( const b2BodySim* bodySim )
 	s.localCenter = bodySim->localCenter;
 	return s;
 }
+
+// Define inline functions for arrays
+B2_ARRAY_INLINE( b2Body, b2Body )
+B2_ARRAY_INLINE( b2BodySim, b2BodySim )
+B2_ARRAY_INLINE( b2BodyState, b2BodyState )

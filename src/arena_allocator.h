@@ -3,26 +3,24 @@
 
 #pragma once
 
-#include "container.h"
+#include "array.h"
 
-#include <stdbool.h>
+B2_ARRAY_DECLARE( b2ArenaEntry, b2ArenaEntry );
 
-b2DeclareArray( b2StackEntry );
-
-typedef struct b2StackEntry
+typedef struct b2ArenaEntry
 {
 	char* data;
 	const char* name;
 	int size;
 	bool usedMalloc;
-} b2StackEntry;
+} b2ArenaEntry;
 
 // This is a stack-like arena allocator used for fast per step allocations.
 // You must nest allocate/free pairs. The code will B2_ASSERT
 // if you try to interleave multiple allocate/free pairs.
 // This allocator uses the heap if space is insufficient.
 // I could remove the need to free entries individually.
-typedef struct b2Stack
+typedef struct b2ArenaAllocator
 {
 	char* data;
 	int capacity;
@@ -31,19 +29,20 @@ typedef struct b2Stack
 	int allocation;
 	int maxAllocation;
 
-	b2Array( b2StackEntry ) entries;
-} b2Stack;
+	b2ArenaEntryArray entries;
+} b2ArenaAllocator;
 
-b2Stack b2CreateStack( int capacity );
-void b2DestroyStack( b2Stack* allocator );
+b2ArenaAllocator b2CreateArenaAllocator( int capacity );
+void b2DestroyArenaAllocator( b2ArenaAllocator* allocator );
 
-void* b2StackAlloc( b2Stack* alloc, int size, const char* name );
-void b2StackFree( b2Stack* alloc, void* mem );
+void* b2AllocateArenaItem( b2ArenaAllocator* alloc, int size, const char* name );
+void b2FreeArenaItem( b2ArenaAllocator* alloc, void* mem );
 
-// Grow the stack based on usage
-void b2GrowStack( b2Stack* alloc );
+// Grow the arena based on usage
+void b2GrowArena( b2ArenaAllocator* alloc );
 
-int b2GetStackCapacity( b2Stack* alloc );
-int b2GetStackAllocation( b2Stack* alloc );
-int b2GetMaxStackAllocation( b2Stack* alloc );
+int b2GetArenaCapacity( b2ArenaAllocator* alloc );
+int b2GetArenaAllocation( b2ArenaAllocator* alloc );
+int b2GetMaxArenaAllocation( b2ArenaAllocator* alloc );
 
+B2_ARRAY_INLINE( b2ArenaEntry, b2ArenaEntry )

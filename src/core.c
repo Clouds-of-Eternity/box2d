@@ -3,8 +3,6 @@
 
 #include "core.h"
 
-#include "box2d/math_functions.h"
-
 #if defined( B2_COMPILER_MSVC )
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -13,7 +11,6 @@
 #include <stdlib.h>
 #endif
 
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -33,7 +30,7 @@
 #include "atomic.h"
 
 // This allows the user to change the length units at runtime
-static float b2_lengthUnitsPerMeter = 1.0f;
+float b2_lengthUnitsPerMeter = 1.0f;
 
 void b2SetLengthUnitsPerMeter( float lengthUnits )
 {
@@ -48,14 +45,13 @@ float b2GetLengthUnitsPerMeter( void )
 
 static int b2DefaultAssertFcn( const char* condition, const char* fileName, int lineNumber )
 {
-	fprintf( stderr, "BOX2D ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
-	fflush( stderr );
+	printf( "BOX2D ASSERTION: %s, %s, line %d\n", condition, fileName, lineNumber );
 
 	// return non-zero to break to debugger
 	return 1;
 }
 
-static b2AssertFcn* b2AssertHandler = b2DefaultAssertFcn;
+b2AssertFcn* b2AssertHandler = b2DefaultAssertFcn;
 
 void b2SetAssertFcn( b2AssertFcn* assertFcn )
 {
@@ -64,53 +60,25 @@ void b2SetAssertFcn( b2AssertFcn* assertFcn )
 }
 
 #if !defined( NDEBUG ) || defined( B2_ENABLE_ASSERT )
-int b2InternalAssert( const char* condition, const char* fileName, int lineNumber )
+int b2InternalAssertFcn( const char* condition, const char* fileName, int lineNumber )
 {
-	int result = b2AssertHandler( condition, fileName, lineNumber );
-	if ( result )
-	{
-		B2_BREAKPOINT;
-	}
-	return result;
+	return b2AssertHandler( condition, fileName, lineNumber );
 }
 #endif
-
-static void b2DefaultLogFcn( const char* message )
-{
-	printf( "Box2D: %s\n", message );
-}
-
-static b2LogFcn* b2LogHandler = b2DefaultLogFcn;
-
-void b2SetLogFcn( b2LogFcn* logFcn )
-{
-	B2_ASSERT( logFcn != NULL );
-	b2LogHandler = logFcn;
-}
-
-void b2Log( const char* format, ... )
-{
-	va_list args;
-	va_start( args, format );
-	char buffer[512];
-	vsnprintf( buffer, sizeof( buffer ), format, args );
-	b2LogHandler( buffer );
-	va_end( args );
-}
 
 b2Version b2GetVersion( void )
 {
 	return (b2Version){
 		.major = 3,
-		.minor = 2,
-		.revision = 0,
+		.minor = 1,
+		.revision = 1,
 	};
 }
 
 static b2AllocFcn* b2_allocFcn = NULL;
 static b2FreeFcn* b2_freeFcn = NULL;
 
-static b2AtomicInt b2_byteCount;
+b2AtomicInt b2_byteCount;
 
 void b2SetAllocator( b2AllocFcn* allocFcn, b2FreeFcn* freeFcn )
 {
@@ -167,13 +135,6 @@ void* b2Alloc( int size )
 	return ptr;
 }
 
-void* b2AllocZeroInit( int size )
-{
-	void* memory = b2Alloc( size );
-	memset( memory, 0, size );
-	return memory;
-}
-
 void b2Free( void* mem, int size )
 {
 	if ( mem == NULL )
@@ -185,7 +146,7 @@ void b2Free( void* mem, int size )
 
 	if ( b2_freeFcn != NULL )
 	{
-		b2_freeFcn( mem, size );
+		b2_freeFcn( mem );
 	}
 	else
 	{
@@ -208,20 +169,6 @@ void* b2GrowAlloc( void* oldMem, int oldSize, int newSize )
 		memcpy( newMem, oldMem, oldSize );
 		b2Free( oldMem, oldSize );
 	}
-	return newMem;
-}
-
-void* b2GrowAllocZeroInit( void* oldMem, int oldSize, int newSize )
-{
-	B2_ASSERT( newSize > oldSize );
-	void* newMem = b2Alloc( newSize );
-	if ( oldSize > 0 )
-	{
-		memcpy( newMem, oldMem, oldSize );
-		b2Free( oldMem, oldSize );
-	}
-
-	memset( (char*)newMem + oldSize, 0, newSize - oldSize );
 	return newMem;
 }
 
